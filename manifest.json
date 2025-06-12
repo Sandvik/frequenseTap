@@ -1,0 +1,16 @@
+{
+  "name": "TapRate",
+  "short_name": "TapRate",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f9f9f9",
+  "theme_color": "#007aff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "Assets/tapIcon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

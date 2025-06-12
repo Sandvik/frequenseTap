@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>TapRate</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="Assets/tapIcon.png">
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service worker registered.', reg))
+          .catch(err => console.error('Service worker registration failed:', err));
+      });
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f9f9f9;
+      padding: 1em;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      margin-bottom: 0.5em;
+      text-align: center;
+    }
+
+    #bpm {
+      font-size: 3em;
+      margin-bottom: 1em;
+      color: #007aff;
+      transition: opacity 0.2s ease;
+    }
+
+    button {
+      font-size: 2em;
+      padding: 1em 2em;
+      border: none;
+      border-radius: 16px;
+      background-color: #007aff;
+      color: white;
+      width: 80%;
+      max-width: 400px;
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
+      transition: transform 0.1s ease, filter 0.1s ease;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: scale(0.97);
+      filter: brightness(0.95);
+    }
+
+    .selector {
+      margin-top: 2em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    select {
+      font-size: 1em;
+      padding: 0.5em;
+      border-radius: 10px;
+      max-width: 150px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      transition: background-color 0.3s ease;
+    }
+
+    @keyframes flashHighlight {
+      0%   { background-color: #ffe680; }
+      100% { background-color: white; }
+    }
+
+    .flash {
+      animation: flashHighlight 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="bpm">0 RPM</div>
+  <button onclick="registerTap()">TAP</button>
+
+  <div class="selector">
+    <select id="multiplierSelect" onchange="flashSelect(this)">
+      <option value="1">Every stroke</option>
+      <option value="4">Every 4th stroke</option>
+    </select>
+  </div>
+
+  <script>
+    const taps = [];
+    const bpmEl = document.getElementById('bpm');
+
+    function registerTap() {
+      const now = Date.now();
+      taps.push(now);
+
+      while (taps.length > 1 && now - taps[0] > 5000) {
+        taps.shift();
+      }
+
+      if (taps.length >= 2) {
+        const intervals = taps.slice(1).map((t, i) => t - taps[i]);
+        const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        const multiplier = parseInt(document.getElementById('multiplierSelect').value);
+        const rpm = Math.round((60000 / avgInterval) * multiplier);
+
+        bpmEl.style.opacity = 0;
+        setTimeout(() => {
+          bpmEl.innerText = rpm + " RPM";
+          bpmEl.style.opacity = 1;
+        }, 100);
+      }
+    }
+
+    function flashSelect(element) {
+      element.classList.add("flash");
+      setTimeout(() => {
+        element.classList.remove("flash");
+      }, 500);
+    }
+  </script>
+</body>
+</html>
